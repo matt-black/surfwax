@@ -1,0 +1,56 @@
+[project]
+name = "hummie"
+version = "0.1.0"
+description = "JAX implementation of SURF."
+authors = [
+    {name = "Matt Black",email = "matt.black7@gmail.com"}
+]
+readme = "README.md"
+keywords = ["jax"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Mathematics"
+]
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "jax (>=0.6.0,<0.7.0)",
+    "jaxtyping (>=0.3.1,<0.4.0)"
+]
+
+[tool.poetry]
+packages = [{include = "hummie", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+tifffile = "^2025.3.30"
+matplotlib = "^3.10.1"
+black = "^25.1.0"
+mkdocs = "^1.6.1"
+darglint = "^1.8.1"
+flake8 = "^7.2.0"
+isort = "^6.0.1"
+mypy = "^1.15.0"
+pyupgrade = "^3.19.1"
+typeguard = "^4.4.2"
+pre-commit = "^4.2.0"
+pre-commit-hooks = "^5.0.0"
+mkdocstrings-python = "^1.16.10"
+mkdocs-material = "^9.6.12"
+
+[tool.isort]
+profile = "black"
+src_paths = [ "src", "tests" ]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
