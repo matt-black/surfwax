@@ -1,5 +1,6 @@
 """Functions for computing fast, approximate Hessians."""
 
+from functools import partial
 from typing import Sequence
 
 import jax
@@ -30,7 +31,7 @@ def _hessian_det2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> float:
 def hessian_determinant_2d(
     im: IntegralImage, lobe_size: int, normalize: bool
 ) -> Image:
-    """hessian_determinant_2d Compute the pixel-wise hessian determinant for a 2D integral image.
+    """Compute the pixel-wise hessian determinant for a 2D integral image.
 
     Args:
         im (IntegralImage): integral image.
@@ -68,7 +69,7 @@ def _hessian_det3(
 def hessian_determinant_3d(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, normalize: bool
 ) -> Volume:
-    """hessian_determinant_3d Compute the voxel-wise hessian determinant for a 3D integral volume.
+    """Compute the voxel-wise hessian determinant for a 3D integral volume.
 
     Args:
         vol (IntegralVolume): integral volume.
@@ -92,53 +93,49 @@ def hessian_determinant_3d(
         return hd
 
 
+@partial(jax.jit, static_argnums=(2, 3))
 def response_scale_space_2d(
     im: IntegralImage,
-    lobe_sizes: Sequence[int] | Int[Array, " n"],
+    lobe_sizes: Int[Array, " n"],
+    crop_size: int,
     normalize: bool = True,
-    crop: bool = False,
 ) -> ImageScaleSpace:
-    """response_scale_space_2d Compute a 3D response scale for a 2D image.
+    """Compute a 3D response scale for a 2D image.
 
     Args:
         im (IntegralImage): integral image.
         lobe_sizes (Sequence[int] | Int[Array, "n"]): lobe size of filters for each scale.
         normalize (bool, optional): normalize the responses to the filter size. Defaults to True.
-        crop (bool, optional): crop to only regions where all filters fully see the image. Defaults to False.
 
     Returns:
         ImageScaleSpace: scale space.
     """
     hess = Partial(hessian_determinant_2d, im, normalize=normalize)
-    lobe_sizes = jnp.array(lobe_sizes, dtype=jnp.int32)[:, None]
-    if crop:
-        max_filt_size = jnp.max(2 * lobe_sizes)
-        imsze_at_maxfilt = [
-            im.shape[0] - 2 * max_filt_size,
-            im.shape[1] - 2 * max_filt_size,
-        ]
-        slice = Partial(
-            jax.lax.dynamic_slice,
-            start_indices=[max_filt_size, max_filt_size],
-            slice_sizes=imsze_at_maxfilt,
-        )
+    imsze_at_maxfilt = [
+        im.shape[0] - 2 * crop_size,
+        im.shape[1] - 2 * crop_size,
+    ]
+    slice = Partial(
+        jax.lax.dynamic_slice,
+        start_indices=[crop_size, crop_size],
+        slice_sizes=imsze_at_maxfilt,
+    )
 
-        def calc(lobe_size: int) -> Array:
-            return slice(hess(lobe_size))
+    def calc(lobe_size: int) -> Array:
+        return slice(hess(lobe_size))
 
-    else:
-        calc = hess
-    return jax.vmap(calc, 0, 0)(lobe_sizes)
+    return jax.vmap(calc, 0, 0)(lobe_sizes[:, None])
 
 
 def response_scale_3d(
     vol: IntegralVolume,
     lobe_sizes_z: Sequence[int] | Int[Array, " n"],
     lobe_sizes_rc: Sequence[int] | Int[Array, " n"],
+    crop_size_z: int,
+    crop_size_rc: int,
     normalize: bool = True,
-    crop: bool = True,
 ) -> VolumeScaleSpace:
-    """response_scale_3d Compute a 5D response scale for a 3D volume.
+    """Compute a 5D response scale for a 3D volume.
 
     Args:
         vol (IntegralVolume): integral volume.
@@ -156,25 +153,20 @@ def response_scale_3d(
     lobe_sizes = jnp.stack(
         jnp.meshgrid(lobe_sizes_z, lobe_sizes_rc), axis=-1
     ).reshape(-1, 2)
-    if crop:
-        max_filt_rc = jnp.max(2 * lobe_sizes_rc)
-        max_filt_z = jnp.max(2 * lobe_sizes_z)
-        imsze_at_maxfilt = [
-            vol.shape[0] - 2 * max_filt_z,
-            vol.shape[1] - 2 * max_filt_rc,
-            vol.shape[2] - 2 * max_filt_rc,
-        ]
-        slice = Partial(
-            jax.lax.dynamic_slice,
-            start_indices=[max_filt_z, max_filt_rc, max_filt_rc],
-            slice_sizes=imsze_at_maxfilt,
-        )
+    imsze_at_maxfilt = [
+        vol.shape[0] - 2 * crop_size_z,
+        vol.shape[1] - 2 * crop_size_rc,
+        vol.shape[2] - 2 * crop_size_rc,
+    ]
+    slice = Partial(
+        jax.lax.dynamic_slice,
+        start_indices=[crop_size_z, crop_size_rc, crop_size_rc],
+        slice_sizes=imsze_at_maxfilt,
+    )
 
-        def calc(lobe_size_z: int, lobe_size_rc: int) -> Array:
-            return slice(hess(lobe_size_z, lobe_size_rc))
+    def calc(lobe_size_z: int, lobe_size_rc: int) -> Array:
+        return slice(hess(lobe_size_z, lobe_size_rc))
 
-    else:
-        calc = hess
     return jax.vmap(calc, 0, 0)(
         lobe_sizes[:, 0][:, None], lobe_sizes[:, 1][:, None]
     )
@@ -183,7 +175,7 @@ def response_scale_3d(
 def hessian_at_center_pixel_2d(
     cube: Real[Array, "3 3 3"],
 ) -> Float[Array, "3 3 3"]:
-    """hessian_at_center_pixel_2d Compute the value of the hessian at the center pixel of the input cube.
+    """Compute the value of the hessian at the center pixel of the input cube.
 
     Args:
         cube (Real[Array, "3 3 3"]): cube of pixel values.

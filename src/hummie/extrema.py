@@ -13,11 +13,12 @@ from .hessian import hessian_at_center_pixel_2d
 from .types import Coord3D, ImageScaleSpace, ScaleSpace, ThresholdedScaleSpace
 
 
-def find_extrema(x: ScaleSpace) -> ThresholdedScaleSpace:
-    """find_extrema Find candidate local extremal points in the input scale space by non-maximal suppression.
+def find_extrema(x: ScaleSpace, window_size: int = 3) -> ThresholdedScaleSpace:
+    """Find candidate local extremal points in the input scale space by non-maximal suppression.
 
     Args:
         x (ScaleSpace): scale space of images.
+        window_size (int): size of window to use.
 
     Returns:
         ThresholdedScaleSpace: binary mask where 1's are detected extrema.
@@ -25,7 +26,7 @@ def find_extrema(x: ScaleSpace) -> ThresholdedScaleSpace:
     n_dim = len(x.shape)
     window_dim = tuple(
         [
-            3,
+            window_size,
         ]
         * n_dim
     )
@@ -45,7 +46,7 @@ def find_extrema(x: ScaleSpace) -> ThresholdedScaleSpace:
 def threshold_responses(
     ss: ScaleSpace, threshold: float, z_score: bool = False
 ) -> ThresholdedScaleSpace:
-    """threshold_responses Find candidate extremal points by thresholding the responses.
+    """Find candidate extremal points by thresholding the responses.
 
     Threshold can be set either absolutely, or as a multiple of the standard deviation of all values (`z_score=True`).
 
@@ -64,20 +65,25 @@ def threshold_responses(
 
 
 def find_threshold_extrema(
-    ss: ScaleSpace, threshold: float, z_score: bool = False
+    ss: ScaleSpace,
+    threshold: float,
+    z_score: bool = False,
+    window_size: int = 3,
 ) -> ThresholdedScaleSpace:
-    """find_threshold_extrema Find candidate extremal points by identifying local maxima and thresholding.
+    """Find candidate extremal points by identifying local maxima and thresholding.
 
     Args:
         ss (ScaleSpace): the scale space.
         threshold (float): the threshold value.
         z_score (bool, optional): whether to z-score the input scale space and set the threshold as values >`threshold*sigma` or treat the threshold as an absolute value (`z_score=False`). Defaults to False.
+        window_size (int, optional): window size to use for non-maximal suppression. Defaults to 3.
 
     Returns:
         ThresholdedScaleSpace: binary mask where 1's are detected extrema.
     """
     return jnp.logical_and(
-        find_extrema(ss), threshold_responses(ss, threshold, z_score)
+        find_extrema(ss, window_size),
+        threshold_responses(ss, threshold, z_score),
     )
 
 
