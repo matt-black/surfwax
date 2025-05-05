@@ -11,12 +11,44 @@ For volumes, a SURF-like algorithm described in [2] is used.
 
 ## Documentation
 
-Coming soon...
+Build locally with `mkdocs`. From the root directory of this repository:
+
+```
+> mkdocs serve
+```
+
+This should start a local server, accessible at [localhost:8000](http://localhost:8000).
 
 ## Dependencies
 
 - [JAX](https://github.com/jax-ml/jax)
 - [jaxtyping](https://github.com/patrick-kidger/jaxtyping)
+
+## Development Setup
+
+Relies on [uv](https://github.com/astral-sh/uv). After installing and cloning the repository, run:
+
+```
+> uv venv
+> uv sync
+> uv pip install -e .
+```
+Then to set up `pre-commit`:
+```
+> pre-commit install
+```
+
+If running on a Mac and you want to use JAX metal (untested):
+
+```
+> uv venv
+> source activate .venv/bin/activate
+(surfwax) > uv pip install numpy wheel
+(surfwax) > uv pip install jax-metal
+(surfwax) > uv sync
+(surfwax) > uv pip install -e .
+```
+Then setup `pre-commit`, as described above.
 
 ## References
 
