@@ -6,12 +6,13 @@ import jax.numpy as jnp
 from jax.tree_util import Partial
 from jaxtyping import Array, Float, Int
 
+from ._util import strided_batch
 from .boxfilter import haarx2, haary2
 from .extrema import find_threshold_extrema
 from .hessian import hessian_determinant_2d
 from .types import Coord2D, Image, ImageOrVolume, IntegralImage, Volume
 
-__all__ = ["haar_response_2d", "upright_surf"]
+__all__ = ["haar_response_2d", "upright_surf_2d"]
 
 
 @partial(jax.jit, static_argnums=(3, 4, 5, 6, 7))
@@ -44,27 +45,7 @@ def _detect_keypoints_local_2d(
     return prev_scale, coords
 
 
-def strided_batch(vals: Sequence, n: int, stride: int = 1):
-    """Yield batches of values from `vals` of specified length (`n`), stepping through the sequence of `vals` with some `stride`.
-
-    Args:
-        vals (Sequence): values to yield from.
-        n (int): number of values in a single batch.
-        stride (int, optional): step size. Defaults to 1.
-
-    Raises:
-        ValueError: if n < 1
-
-    Yields:
-        Tuple
-    """
-    if n < 1:
-        raise ValueError("n must be >= 1")
-    for i in range(0, len(vals) - n, stride):
-        yield tuple(vals[i : i + n])
-
-
-def upright_surf(
+def upright_surf_2d(
     im: IntegralImage,
     lobe_sizes: Sequence[int],
     octave_size: int,

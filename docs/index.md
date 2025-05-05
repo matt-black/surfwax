@@ -1,4 +1,4 @@
-# hummie
+# surfwax
 
 A JAX implementation of 2D and 3D SURF.
 

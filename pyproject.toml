@@ -1,5 +1,5 @@
 [project]
-name = "hummie"
+name = "surfwax"
 version = "0.1.0"
 description = "JAX implementation of SURF."
 authors = [{ name = "Matt Black", email = "matt.black7@gmail.com" }]
@@ -44,13 +44,13 @@ dev = [
 ]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/hummie"]
+include = ["src/surfwax"]
 
 [tool.hatch.build.targets.wheel]
-include = ["src/hummie"]
+include = ["src/surfwax"]
 
 [tool.hatch.build.targets.wheel.sources]
-"src/hummie" = "hummie"
+"src/surfwax" = "surfwax"
 
 [build-system]
 requires = ["hatchling"]
