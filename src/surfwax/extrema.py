@@ -18,7 +18,7 @@ def find_extrema(x: ScaleSpace, window_size: int = 3) -> ThresholdedScaleSpace:
 
     Args:
         x (ScaleSpace): scale space of images.
-        window_size (int): size of window to use.
+        window_size (int): size of window to use. For SURF, a window size of 3 is used.
 
     Returns:
         ThresholdedScaleSpace: binary mask where 1's are detected extrema.

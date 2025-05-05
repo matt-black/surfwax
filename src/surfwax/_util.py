@@ -1,3 +1,5 @@
+"""Miscellaneous small utility functions, internal to library."""
+
 from typing import Sequence
 
 

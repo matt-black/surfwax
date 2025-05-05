@@ -20,6 +20,14 @@ from .types import (
     VolumeScaleSpace,
 )
 
+__all__ = [
+    "hessian_determinant_2d",
+    "hessian_determinant_3d",
+    "response_scale_space_2d",
+    "response_scale_space_3d",
+    "hessian_at_center_pixel_2d",
+]
+
 
 def _hessian_det2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> float:
     dxx = dxx2(im, lobe_size, coord)
@@ -105,6 +113,7 @@ def response_scale_space_2d(
     Args:
         im (IntegralImage): integral image.
         lobe_sizes (Sequence[int] | Int[Array, "n"]): lobe size of filters for each scale.
+        crop_size (int): how much to crop the edge of each dimension by.
         normalize (bool, optional): normalize the responses to the filter size. Defaults to True.
 
     Returns:
@@ -127,7 +136,7 @@ def response_scale_space_2d(
     return jax.vmap(calc, 0, 0)(lobe_sizes[:, None])
 
 
-def response_scale_3d(
+def response_scale_space_3d(
     vol: IntegralVolume,
     lobe_sizes_z: Sequence[int] | Int[Array, " n"],
     lobe_sizes_rc: Sequence[int] | Int[Array, " n"],
@@ -141,8 +150,9 @@ def response_scale_3d(
         vol (IntegralVolume): integral volume.
         lobe_sizes_z (Sequence[int] | Int[Array, "n"]): lobe sizes in the z-direction for filters.
         lobe_sizes_rc (Sequence[int] | Int[Array, "n"]): lobe sizes in the rc-directions for filters.
+        crop_size_z (int): how much to crop off the edges in the z-dimension.
+        crop_size_rc (int): how much to crop off the edges in the rc-dimensions.
         normalize (bool, optional): normalize the responses to the filter size. Defaults to True.
-        crop (bool, optional): crop the scale to only regions where all filters fully see the image. Defaults to True.
 
     Returns:
         VolumeScaleSpace: scale space.

@@ -2,7 +2,6 @@
 
 Box filters are convolutional filters made up of rectangular boxes. In SURF, they are used to approximate the Laplacian of Gaussian filter. In conjunction with integral images, they enable fast computation of derivatives.
 
-
 2D implementation is based on that described in [1].
 3D implementation and references are taken from [2].
 
@@ -34,7 +33,7 @@ from .types import (
 
 
 def integral_array(x: ImageOrVolume) -> IntegralImageOrVolume:
-    """integral_array compute integral representation of an image or volume.
+    """Compute integral representation of an image or volume.
 
     Args:
         x (ImageOrVolume): image or volume.
@@ -57,7 +56,7 @@ def integral_array(x: ImageOrVolume) -> IntegralImageOrVolume:
 
 
 def integral_image(x: Image) -> IntegralImage:
-    """integral_image compute the integral image representation of the input image.
+    """Compute the integral image representation of the input image.
 
     Args:
         x (Image): input image
@@ -69,7 +68,7 @@ def integral_image(x: Image) -> IntegralImage:
 
 
 def integral_volume(x: Volume) -> IntegralVolume:
-    """integral_volume compute the integral volume representation of the input volume.
+    """Compute the integral volume representation of the input volume.
 
     Args:
         x (Volume): input volume.
@@ -86,7 +85,7 @@ def separable_boxlog(
     axes: Tuple[int, int],
     normalize: bool = False,
 ) -> Array:
-    """separable_boxlog Convolve input array with a box filter that approximates a LoG filter.
+    """Convolve input array with a box filter that approximates a LoG filter.
 
     Convolution is done by breaking the LoG-approximating box filter into separable components and convolving these components separately along each axis.
 
@@ -170,7 +169,7 @@ def _separable_conv(
 
 
 def box_filters_2d(size: int) -> Float[Array, "3 {size} {size}"]:
-    """box_filters_2d generate box filters for approximating LoG.
+    """Generate box filters for approximating LoG.
 
     Args:
         size (int): size of the filter, must be 9 + 6n where n is an integer.
@@ -289,7 +288,7 @@ def apply_filter_2d(
     im: IntegralImage,
     lobe_size: int,
 ) -> Image:
-    """apply_filter_2d Apply the box filter to the 2D integral image.
+    """Apply the box filter to the 2D integral image.
 
     Args:
         filt (Callable[[IntegralImage, int, Coord2D], Number]): the filter to apply.
@@ -313,7 +312,7 @@ def apply_filter_3d(
     lobe_size_z: int,
     lobe_size_rc: int,
 ) -> Volume:
-    """apply_filter_3d Apply the box filter to a 3D integral volume.
+    """Apply the box filter to a 3D integral volume.
 
     Args:
         filt (Callable[[IntegralVolume, int, int, Coord2D], Number]): the filter to apply.
@@ -333,7 +332,7 @@ def apply_filter_3d(
 
 
 def dyy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
-    """dyy2 2D LoG filter in yy-direction, value at specified coordinate.
+    """2D LoG filter in yy-direction, value at specified coordinate.
 
     Args:
         im (IntegralImage): integral image.
@@ -361,7 +360,7 @@ def dyy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
 
 
 def dxx2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
-    """dxx2 2D LoG filter in xx-direction, value at specified coordinate.
+    """2D LoG filter in xx-direction, value at specified coordinate.
 
     Args:
         im (IntegralImage): integral image.
@@ -389,7 +388,7 @@ def dxx2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
 
 
 def dxy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
-    """dxy2 2D LoG filter in xy-direction, value at specified coordinate.
+    """2D LoG filter in xy-direction, value at specified coordinate.
 
     Args:
         im (IntegralImage): integral image.
@@ -411,7 +410,7 @@ def dxy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
 def dzz3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
 ) -> Number:
-    """dzz3 3D LoG filter in the zz-direction, value at specified coordinate.
+    """3D LoG filter in the zz-direction, value at specified coordinate.
 
     Args:
         vol (IntegralVolume): integral volume.
@@ -464,7 +463,7 @@ def dzz3(
 def dyy3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
 ) -> Number:
-    """dyy3 3D LoG filter in the yy-direction, value at specified coordinate.
+    """3D LoG filter in the yy-direction, value at specified coordinate.
 
     Args:
         vol (IntegralVolume): integral volume.
@@ -508,7 +507,7 @@ def dyy3(
 def dxx3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
 ) -> Number:
-    """dxx3 3D LoG filter in the xx-direction, value at specified coordinate.
+    """3D LoG filter in the xx-direction, value at specified coordinate.
 
     Args:
         vol (IntegralVolume): integral volume.
@@ -550,7 +549,7 @@ def dxx3(
 def dxz3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
 ) -> Number:
-    """dxz3 3D LoG filter in the xz-direction, value at specified coordinate.
+    """3D LoG filter in the xz-direction, value at specified coordinate.
 
     Args:
         vol (IntegralVolume): integral volume.
@@ -574,7 +573,7 @@ def dxz3(
 def dyz3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
 ) -> Number:
-    """dyz3 3D LoG filter in the yz-direction, value at specified coordinate.
+    """3D LoG filter in the yz-direction, value at specified coordinate.
 
     Args:
         vol (IntegralVolume): integral volume.
@@ -598,7 +597,7 @@ def dyz3(
 def dxy3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
 ) -> Number:
-    """dxy3 3D LoG filter in the xy-direction, value at specified coordinate.
+    """3D LoG filter in the xy-direction, value at specified coordinate.
 
     Args:
         vol (IntegralVolume): integral volume.
@@ -620,7 +619,7 @@ def dxy3(
 
 
 def haarx2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Number:
-    """haarx2 Compute value of x-directional Haar filter at specified coordinate.
+    """Compute value of x-directional Haar filter at specified coordinate.
 
     Args:
         im (IntegralImage): integral image.
@@ -648,7 +647,7 @@ def haarx2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Number:
 
 
 def haary2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Number:
-    """haary2 Compute value of y-directional Haar filter at specified coordinate.
+    """Compute value of y-directional Haar filter at specified coordinate.
 
     Args:
         im (IntegralImage): integral image.

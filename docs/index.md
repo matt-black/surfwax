@@ -1,6 +1,6 @@
 # surfwax
 
-A JAX implementation of 2D and 3D SURF.
+A JAX implementation of 2D and 3D SURF, for finding scale-invariant keypoints in images and volumes.
 
 ## Introduction
 

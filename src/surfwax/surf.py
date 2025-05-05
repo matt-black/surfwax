@@ -7,12 +7,12 @@ from jax.tree_util import Partial
 from jaxtyping import Array, Float, Int
 
 from ._util import strided_batch
-from .boxfilter import haarx2, haary2
 from .extrema import find_threshold_extrema
+from .haar import haar_response_2d
 from .hessian import hessian_determinant_2d
 from .types import Coord2D, Image, ImageOrVolume, IntegralImage, Volume
 
-__all__ = ["haar_response_2d", "upright_surf_2d"]
+__all__ = ["upright_surf_2d"]
 
 
 @partial(jax.jit, static_argnums=(3, 4, 5, 6, 7))
@@ -226,28 +226,3 @@ def _subwindow_descriptor_2d(
         return jnp.asarray([dx, dy, jnp.abs(dx), jnp.abs(dy)])
 
     return jnp.sum(jax.vmap(map_fun, 0, 0)(coords), axis=0)
-
-
-def haar_response_2d(
-    im: IntegralImage, filt_size: int
-) -> Float[Array, "2 r c"]:
-    """haar_response Compute the responses to a Haar wavelet of specified size for hte input image.
-
-    Args:
-        im (IntegralImage): input image.
-        filt_size (int): size of the Haar filter (in the filtering direction).
-
-    Returns:
-        Float[Array, "2 r c"]: x, y responses at each pixel.
-    """
-    coords = jnp.stack(
-        jnp.meshgrid(*[jnp.arange(0, s) for s in im.shape], indexing="ij"),
-        axis=-1,
-    ).reshape(-1, 2)
-    x = (jax.vmap(Partial(haarx2, im, filt_size), 0, 0)(coords)).reshape(
-        im.shape
-    )
-    y = (jax.vmap(Partial(haary2, im, filt_size), 0, 0)(coords)).reshape(
-        im.shape
-    )
-    return jnp.stack([x, y], axis=0) / (filt_size**2)
