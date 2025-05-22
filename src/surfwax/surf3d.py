@@ -213,7 +213,6 @@ def _usurf_local_3d(
             _extract_descriptor_window_3d(vol, window_size, coord), chunk_size
         )
         descs = jax.vmap(
-            # computes haar wavelet responses for each subregion
             Partial(
                 _subwindow_descriptor_3d,
                 haar_filt_size=haar_filt_size,
@@ -223,7 +222,7 @@ def _usurf_local_3d(
             0,
         )(swin)
 
-        return descs.flatten()[: 4 * n_subwindow_per_dim**2]  # change this
+        return descs.flatten()[: 4 * n_subwindow_per_dim**2]
 
     vecs = jnp.stack(
         [describe(coords[i, 1:]) for i in range(coords.shape[0])], axis=0
@@ -252,7 +251,6 @@ def _extract_descriptor_window_3d(
     coord: Coord3D,
     orientation: Optional[Float[Array, "3"]] = None,
 ) -> Float[Array, "{wz} {wy} {wx}"]:
-    # Standard axis-aligned extraction
     top_left = jnp.around(
         coord - jnp.array(window_size) // 2, decimals=0
     ).astype(jnp.int32)
