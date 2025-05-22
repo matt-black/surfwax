@@ -672,3 +672,141 @@ def haary2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Number:
     e = (cr + lobe_size, cc - lobe_size)
     f = (cr + lobe_size, cc + lsm1)
     return boxsum(a, b, c, d) - boxsum(c, d, e, f)
+
+
+def boxsum3d(
+    vol: IntegralVolume,
+    a: Coord3D,
+    b: Coord3D,
+    c: Coord3D,
+    d: Coord3D,
+    e: Coord3D,
+    f: Coord3D,
+    g: Coord3D,
+    h: Coord3D,
+) -> Number:
+    """Compute sum of 3D box with by 8 corners in an integral volume"""
+    return (
+        vol[h[0], h[1], h[2]]
+        - vol[e[0], e[1], e[2]]
+        - vol[d[0], d[1], d[2]]
+        + vol[a[0], a[1], a[2]]
+        - vol[g[0], g[1], g[2]]
+        + vol[f[0], f[1], f[2]]
+        + vol[c[0], c[1], c[2]]
+        - vol[b[0], b[1], b[2]]
+    )
+
+
+def haarx3d(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Number:
+    """Compute value of 3D x-directional Haar response (right - left) cuboid
+
+    Args:
+        vol (IntegralVolume): integral volume.
+        filt_size (int): size of Haar filter (in pixels).
+        coord (Coord3D): coordinate to compute value at.
+
+    Returns:
+        Number: value of x-directional 3D Haar filter.
+    """
+    cz, cy, cx = coord[2], coord[1], coord[0]
+    boxsum = Partial(boxsum3d, vol)
+    lobe_size = filt_size // 2
+    lsm1 = lobe_size - 1
+    # left cuboid (x - lobe_size to x)
+    a = (cz - lobe_size, cy - lobe_size, cx - lobe_size)
+    b = (cz - lobe_size, cy - lobe_size, cx)
+    c = (cz - lobe_size, cy + lsm1, cx - lobe_size)
+    d = (cz - lobe_size, cy + lsm1, cx)
+    e = (cz + lsm1, cy - lobe_size, cx - lobe_size)
+    f = (cz + lsm1, cy - lobe_size, cx)
+    g = (cz + lsm1, cy + lsm1, cx - lobe_size)
+    h = (cz + lsm1, cy + lsm1, cx)
+    left = boxsum(a, b, c, d, e, f, g, h)
+    # right cuboid (x to x + lobe_size)
+    a = (cz - lobe_size, cy - lobe_size, cx)
+    b = (cz - lobe_size, cy - lobe_size, cx + lsm1)
+    c = (cz - lobe_size, cy + lsm1, cx)
+    d = (cz - lobe_size, cy + lsm1, cx + lsm1)
+    e = (cz + lsm1, cy - lobe_size, cx)
+    f = (cz + lsm1, cy - lobe_size, cx + lsm1)
+    g = (cz + lsm1, cy + lsm1, cx)
+    h = (cz + lsm1, cy + lsm1, cx + lsm1)
+    right = boxsum(a, b, c, d, e, f, g, h)
+    return right - left
+
+
+def haary3d(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Number:
+    """Compute value of 3D y-directional Haar response (bottom - top) cuboid
+
+    Args:
+        vol (IntegralVolume): integral volume.
+        filt_size (int): size of Haar filter (in pixels).
+        coord (Coord3D): coordinate to compute value at.
+
+    Returns:
+        Number: value of y-directional 3D Haar filter.
+    """
+    cz, cy, cx = coord[2], coord[1], coord[0]
+    boxsum = Partial(boxsum3d, vol)
+    lobe_size = filt_size // 2
+    lsm1 = lobe_size - 1
+    # top(y - lobe_size to y)
+    a = (cz - lobe_size, cy - lobe_size, cx - lobe_size)
+    b = (cz - lobe_size, cy - lobe_size, cx + lsm1)
+    c = (cz - lobe_size, cy, cx - lobe_size)
+    d = (cz - lobe_size, cy, cx + lsm1)
+    e = (cz + lsm1, cy - lobe_size, cx - lobe_size)
+    f = (cz + lsm1, cy - lobe_size, cx + lsm1)
+    g = (cz + lsm1, cy, cx - lobe_size)
+    h = (cz + lsm1, cy, cx + lsm1)
+    top = boxsum(a, b, c, d, e, f, g, h)
+    # bottom(y to y + lobe_size)
+    a = (cz - lobe_size, cy, cx - lobe_size)
+    b = (cz - lobe_size, cy, cx + lsm1)
+    c = (cz - lobe_size, cy + lobe_size, cx - lobe_size)
+    d = (cz - lobe_size, cy + lobe_size, cx + lsm1)
+    e = (cz + lsm1, cy, cx - lobe_size)
+    f = (cz + lsm1, cy, cx + lsm1)
+    g = (cz + lsm1, cy + lobe_size, cx - lobe_size)
+    h = (cz + lsm1, cy + lobe_size, cx + lsm1)
+    bottom = boxsum(a, b, c, d, e, f, g, h)
+    return bottom - top
+
+
+def haarz3d(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Number:
+    """Compute value of 3D z-directional Haar response (front - back) cuboid
+
+    Args:
+        vol (IntegralVolume): integral volume.
+        filt_size (int): size of Haar filter (in pixels).
+        coord (Coord3D): coordinate to compute value at.
+
+    Returns:
+        Number: value of z-directional 3D Haar filter.
+    """
+    cz, cy, cx = coord[2], coord[1], coord[0]
+    boxsum = Partial(boxsum3d, vol)
+    lobe_size = filt_size // 2
+    lsm1 = lobe_size - 1
+    # front(z - lobe_size to z)
+    a = (cz - lobe_size, cy - lobe_size, cx - lobe_size)
+    b = (cz - lobe_size, cy - lobe_size, cx + lsm1)
+    c = (cz - lobe_size, cy + lsm1, cx - lobe_size)
+    d = (cz - lobe_size, cy + lsm1, cx + lsm1)
+    e = (cz, cy - lobe_size, cx - lobe_size)
+    f = (cz, cy - lobe_size, cx + lsm1)
+    g = (cz, cy + lsm1, cx - lobe_size)
+    h = (cz, cy + lsm1, cx + lsm1)
+    front = boxsum(a, b, c, d, e, f, g, h)
+    # back(z to z + lobe_size)
+    a = (cz, cy - lobe_size, cx - lobe_size)
+    b = (cz, cy - lobe_size, cx + lsm1)
+    c = (cz, cy + lsm1, cx - lobe_size)
+    d = (cz, cy + lsm1, cx + lsm1)
+    e = (cz + lobe_size, cy - lobe_size, cx - lobe_size)
+    f = (cz + lobe_size, cy - lobe_size, cx + lsm1)
+    g = (cz + lobe_size, cy + lsm1, cx - lobe_size)
+    h = (cz + lobe_size, cy + lsm1, cx + lsm1)
+    back = boxsum(a, b, c, d, e, f, g, h)
+    return back - front
