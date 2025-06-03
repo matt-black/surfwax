@@ -10,7 +10,14 @@ from ._util import strided_batch
 from .extrema import find_threshold_extrema
 from .haar import haar_response_2d
 from .hessian import hessian_determinant_2d
-from .types import Coord2D, Image, ImageOrVolume, IntegralImage, Volume
+from .types import (
+    Coord2D,
+    Image,
+    ImageOrVolume,
+    IntegralImage,
+    ScalarInt,
+    Volume,
+)
 
 __all__ = ["upright_surf_2d"]
 
@@ -179,7 +186,7 @@ def _descriptor_window_size_2d(
     sigma: float,
     window_scale_mult: float = 20.0,
     n_subwindow_per_dim: int = 4,
-) -> int:
+) -> ScalarInt:
     window_size = (
         jnp.around(window_scale_mult * sigma, decimals=0).astype(jnp.int32)
         // n_subwindow_per_dim
@@ -190,7 +197,7 @@ def _descriptor_window_size_2d(
 
 def _extract_descriptor_window_2d(
     im: IntegralImage,
-    window_size: int,
+    window_size: int | ScalarInt,
     coord: Coord2D,
     orientation: float = 0,
 ) -> Float[Array, "{window_size} {window_size}"]:
@@ -202,7 +209,9 @@ def _extract_descriptor_window_2d(
     return im[top_left[0] : bot_right[0], top_left[1] : bot_right[1]]
 
 
-def _split_descriptor_window_2d(im: Image, chunk_size: int) -> Volume:
+def _split_descriptor_window_2d(
+    im: Image, chunk_size: int | ScalarInt
+) -> Volume:
     steps = jnp.arange(0, im.shape[-1], chunk_size)
     coords = jnp.stack(jnp.meshgrid(steps, steps), axis=-1).reshape(-1, 2)
     map_fun = Partial(
