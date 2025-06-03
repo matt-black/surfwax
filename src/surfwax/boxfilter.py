@@ -12,7 +12,6 @@ References
 """
 
 from collections.abc import Callable
-from numbers import Number
 from typing import Tuple
 
 import jax
@@ -28,6 +27,7 @@ from .types import (
     IntegralImage,
     IntegralImageOrVolume,
     IntegralVolume,
+    Scalar,
     Volume,
 )
 
@@ -211,13 +211,13 @@ def box_filters_2d(size: int) -> Float[Array, "3 {size} {size}"]:
 
 
 # implementation in terms of indexing
-def _try_get_im(im: Image, r: int, c: int) -> Number:
+def _try_get_im(im: Image, r: int, c: int) -> Scalar:
     too_small = jnp.logical_or(r < 0, c < 0)
     too_large = jnp.logical_or(r >= im.shape[0], c >= im.shape[1])
     return jnp.where(jnp.logical_or(too_small, too_large), 0, im[r, c])
 
 
-def _try_get_vol(v: Volume, z: int, r: int, c: int) -> Number:
+def _try_get_vol(v: Volume, z: int, r: int, c: int) -> Scalar:
     okay_z = jnp.logical_and(z >= 0, z < v.shape[0])
     okay_r = jnp.logical_and(r >= 0, r < v.shape[1])
     okay_c = jnp.logical_and(c >= 0, c < v.shape[2])
@@ -227,14 +227,14 @@ def _try_get_vol(v: Volume, z: int, r: int, c: int) -> Number:
 
 def _boxsum2d_from_abcd(
     im: IntegralImage, a: Coord2D, b: Coord2D, c: Coord2D, d: Coord2D
-) -> Number:
+) -> Scalar:
     get = Partial(_try_get_im, im)
     return get(a[0], a[1]) + get(d[0], d[1]) - get(b[0], b[1]) - get(c[0], c[1])
 
 
 def _boxsum2d_from_tl(
     im: IntegralImage, lobe_size: int, top_left: Coord2D
-) -> Number:
+) -> Scalar:
     top, lft = top_left[0], top_left[1]
     get = Partial(_try_get_im, im)
     return (
@@ -255,7 +255,7 @@ def _boxsum3d_from_abcdefgh(
     f: Coord3D,
     g: Coord3D,
     h: Coord3D,
-) -> Number:
+) -> Scalar:
     get = Partial(_try_get_vol, vol)
     return (
         get(e[0], e[1], e[2])
@@ -271,7 +271,7 @@ def _boxsum3d_from_abcdefgh(
 
 def _boxsum3d_from_tl(
     vol: IntegralVolume, lobe_z: int, lobe_rc: int, top_left: Coord3D
-) -> Number:
+) -> Scalar:
     d = top_left.copy()
     b = d.at[2].add(lobe_rc)
     a = b.at[0].add(lobe_z)
@@ -284,14 +284,14 @@ def _boxsum3d_from_tl(
 
 
 def apply_filter_2d(
-    filt: Callable[[IntegralImage, int, Coord2D], Number],
+    filt: Callable[[IntegralImage, int, Coord2D], Scalar],
     im: IntegralImage,
     lobe_size: int,
 ) -> Image:
     """Apply the box filter to the 2D integral image.
 
     Args:
-        filt (Callable[[IntegralImage, int, Coord2D], Number]): the filter to apply.
+        filt (Callable[[IntegralImage, int, Coord2D], Scalar]): the filter to apply.
         im (IntegralImage): integral image.
         lobe_size (int): lobe size of the filter (2nd parameter to filter function).
 
@@ -307,7 +307,7 @@ def apply_filter_2d(
 
 
 def apply_filter_3d(
-    filt: Callable[[IntegralVolume, int, int, Coord2D], Number],
+    filt: Callable[[IntegralVolume, int, int, Coord2D], Scalar],
     vol: IntegralVolume,
     lobe_size_z: int,
     lobe_size_rc: int,
@@ -315,7 +315,7 @@ def apply_filter_3d(
     """Apply the box filter to a 3D integral volume.
 
     Args:
-        filt (Callable[[IntegralVolume, int, int, Coord2D], Number]): the filter to apply.
+        filt (Callable[[IntegralVolume, int, int, Coord2D], Scalar]): the filter to apply.
         vol (IntegralVolume): integral volume.
         lobe_size_z (int): lobe size of the filter in the z-direction (2nd param. to filter function).
         lobe_size_rc (int): lobe size of the filter in the rc-directions (3rd param. to filter function).
@@ -331,7 +331,7 @@ def apply_filter_3d(
     return jax.vmap(fun, 0, 0)(coords).reshape(vol.shape)
 
 
-def dyy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
+def dyy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Scalar:
     """2D LoG filter in yy-direction, value at specified coordinate.
 
     Args:
@@ -340,7 +340,7 @@ def dyy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
         coord (Coord2D): coordinate to compute value at.
 
     Returns:
-        Number: value.
+        Scalar: value.
     """
     boxsum = Partial(_boxsum2d_from_abcd, im)
     cr, cc = coord[0], coord[1]
@@ -359,7 +359,7 @@ def dyy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
     return boxsum(a, e, b, f) - 2 * boxsum(b, f, c, g) + boxsum(c, g, d, h)
 
 
-def dxx2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
+def dxx2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Scalar:
     """2D LoG filter in xx-direction, value at specified coordinate.
 
     Args:
@@ -368,7 +368,7 @@ def dxx2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
         coord (Coord2D): coordinate to compute value at.
 
     Returns:
-        Number: value.
+        Scalar: value.
     """
     boxsum = Partial(_boxsum2d_from_abcd, im)
     cr, cc = coord[0], coord[1]
@@ -387,7 +387,7 @@ def dxx2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
     return boxsum(a, b, e, f) - 2 * boxsum(b, c, f, g) + boxsum(c, d, g, h)
 
 
-def dxy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
+def dxy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Scalar:
     """2D LoG filter in xy-direction, value at specified coordinate.
 
     Args:
@@ -396,7 +396,7 @@ def dxy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
         coord (Coord2D): coordinate to compute value at.
 
     Returns:
-        Number: value.
+        Scalar: value.
     """
     cr, cc = coord[0], coord[1]
     boxsum = Partial(_boxsum2d_from_tl, im, lobe_size)
@@ -409,7 +409,7 @@ def dxy2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Number:
 
 def dzz3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
-) -> Number:
+) -> Scalar:
     """3D LoG filter in the zz-direction, value at specified coordinate.
 
     Args:
@@ -419,7 +419,7 @@ def dzz3(
         coord (Coord3D): coordinate to compute value at.
 
     Returns:
-        Number: value.
+        Scalar: value.
     """
     boxsum = Partial(_boxsum3d_from_abcdefgh, vol)
     cz, cr, cc = coord[0], coord[1], coord[2]
@@ -462,7 +462,7 @@ def dzz3(
 
 def dyy3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
-) -> Number:
+) -> Scalar:
     """3D LoG filter in the yy-direction, value at specified coordinate.
 
     Args:
@@ -472,7 +472,7 @@ def dyy3(
         coord (Coord3D): coordinate to compute value at.
 
     Returns:
-        Number: value.
+        Scalar: value.
     """
     boxsum = Partial(_boxsum3d_from_abcdefgh, vol)
     cz, cr, cc = coord[0], coord[1], coord[2]
@@ -506,7 +506,7 @@ def dyy3(
 
 def dxx3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
-) -> Number:
+) -> Scalar:
     """3D LoG filter in the xx-direction, value at specified coordinate.
 
     Args:
@@ -516,7 +516,7 @@ def dxx3(
         coord (Coord3D): coordinate to compute value at.
 
     Returns:
-        Number: value.
+        Scalar: value.
     """
     boxsum = Partial(_boxsum3d_from_abcdefgh, vol)
     cz, cr, cc = coord[0], coord[1], coord[2]
@@ -548,7 +548,7 @@ def dxx3(
 
 def dxz3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
-) -> Number:
+) -> Scalar:
     """3D LoG filter in the xz-direction, value at specified coordinate.
 
     Args:
@@ -558,7 +558,7 @@ def dxz3(
         coord (Coord3D): coordinate to compute value at.
 
     Returns:
-        Number: value.
+        Scalar: value.
     """
     boxsum = Partial(_boxsum3d_from_tl, vol, lobe_size_z, lobe_size_rc)
     qor = lobe_size_rc // 2
@@ -572,7 +572,7 @@ def dxz3(
 
 def dyz3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
-) -> Number:
+) -> Scalar:
     """3D LoG filter in the yz-direction, value at specified coordinate.
 
     Args:
@@ -582,7 +582,7 @@ def dyz3(
         coord (Coord3D): coordinate to compute value at.
 
     Returns:
-        Number: value.
+        Scalar: value.
     """
     boxsum = Partial(_boxsum3d_from_tl, vol, lobe_size_z, lobe_size_rc)
     qoc = lobe_size_rc // 2
@@ -596,7 +596,7 @@ def dyz3(
 
 def dxy3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
-) -> Number:
+) -> Scalar:
     """3D LoG filter in the xy-direction, value at specified coordinate.
 
     Args:
@@ -606,7 +606,7 @@ def dxy3(
         coord (Coord3D): coordinate to compute value at.
 
     Returns:
-        Number: value.
+        Scalar: value.
     """
     boxsum = Partial(_boxsum3d_from_tl, vol, lobe_size_z, lobe_size_rc)
     qoz = lobe_size_z // 2
@@ -618,7 +618,7 @@ def dxy3(
     return boxsum(q0tl) - boxsum(q1tl) - boxsum(q2tl) + boxsum(q3tl)
 
 
-def haarx2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Number:
+def haarx2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Scalar:
     """Compute value of x-directional Haar filter at specified coordinate.
 
     Args:
@@ -627,7 +627,7 @@ def haarx2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Number:
         coord (Coord2D): coordinate to compute value at.
 
     Returns:
-        Number: value of x-directional Haar filter.
+        Scalar: value of x-directional Haar filter.
     """
     cr, cc = coord[0], coord[1]
     boxsum = Partial(_boxsum2d_from_abcd, im)
@@ -646,7 +646,7 @@ def haarx2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Number:
     return boxsum(a, b, d, e) - boxsum(b, c, e, f)
 
 
-def haary2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Number:
+def haary2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Scalar:
     """Compute value of y-directional Haar filter at specified coordinate.
 
     Args:
@@ -655,7 +655,7 @@ def haary2(im: IntegralImage, filt_size: int, coord: Coord2D) -> Number:
         coord (Coord2D): coordinate to compute value at.
 
     Returns:
-        Number: value of y-directional Haar filter.
+        Scalar: value of y-directional Haar filter.
     """
     cr, cc = coord[0], coord[1]
     boxsum = Partial(_boxsum2d_from_abcd, im)
