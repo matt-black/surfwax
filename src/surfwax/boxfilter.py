@@ -684,7 +684,7 @@ def boxsum3d(
     f: Coord3D,
     g: Coord3D,
     h: Coord3D,
-) -> Number:
+) -> Scalar:
     """Compute sum of 3D box with by 8 corners in an integral volume"""
     return (
         vol[h[0], h[1], h[2]]
@@ -698,7 +698,7 @@ def boxsum3d(
     )
 
 
-def haarx3d(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Number:
+def haarx3(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Scalar:
     """Compute value of 3D x-directional Haar response (right - left) cuboid
 
     Args:
@@ -736,7 +736,7 @@ def haarx3d(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Number:
     return right - left
 
 
-def haary3d(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Number:
+def haary3(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Scalar:
     """Compute value of 3D y-directional Haar response (bottom - top) cuboid
 
     Args:
@@ -774,7 +774,7 @@ def haary3d(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Number:
     return bottom - top
 
 
-def haarz3d(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Number:
+def haarz3(vol: IntegralVolume, filt_size: int, coord: Coord3D) -> Scalar:
     """Compute value of 3D z-directional Haar response (front - back) cuboid
 
     Args:

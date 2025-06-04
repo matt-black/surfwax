@@ -3,11 +3,8 @@ import jax.numpy as jnp
 from jax.tree_util import Partial
 from jaxtyping import Array, Float
 
-from .boxfilter import haarx2, haarx3d, haary2, haary3d, haarz3d
-
-# import haar x3
-from .types import IntegralVolume  # not accessed in Pylance
-from .types import IntegralImage
+from .boxfilter import haarx2, haarx3, haary2, haary3, haarz3
+from .types import IntegralImage, IntegralVolume
 
 
 def haar_response_2d(
@@ -54,13 +51,13 @@ def haar_response_3d(
     ).reshape(
         -1, 3
     )  # [num_voxels, 3]
-    dx = (jax.vmap(Partial(haarx3d, vol, filt_size), 0, 0)(coords)).reshape(
+    dx = (jax.vmap(Partial(haarx3, vol, filt_size), 0, 0)(coords)).reshape(
         vol.shape
     )
-    dy = (jax.vmap(Partial(haary3d, vol, filt_size), 0, 0)(coords)).reshape(
+    dy = (jax.vmap(Partial(haary3, vol, filt_size), 0, 0)(coords)).reshape(
         vol.shape
     )
-    dz = (jax.vmap(Partial(haarz3d, vol, filt_size), 0, 0)(coords)).reshape(
+    dz = (jax.vmap(Partial(haarz3, vol, filt_size), 0, 0)(coords)).reshape(
         vol.shape
     )
     return jnp.stack([dx, dy, dz], axis=0) / (filt_size**3)
