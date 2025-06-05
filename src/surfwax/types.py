@@ -2,7 +2,7 @@
 
 from typing import Union
 
-from jaxtyping import Array, Bool, Float, Int
+from jaxtyping import Array, Bool, Float, Int, Num
 
 # convenience types for images & volumes
 Image = Union[Int[Array, "r c"], Float[Array, "r c"]]
@@ -29,3 +29,8 @@ ThresholdedScaleSpace = Union[Bool[Array, "n r c"], Bool[Array, "n1 n2 z r c"]]
 ImageOctave = Float[Array, "n r c"]
 VolumeOctave = Float[Array, "n1 n2 z r c"]
 Octave = Union[ImageOctave, VolumeOctave]
+
+# scalars
+Scalar = Num[Array, ""]
+ScalarInt = Int[Array, ""]
+ScalarFloat = Float[Array, ""]

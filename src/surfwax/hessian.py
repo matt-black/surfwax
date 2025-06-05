@@ -16,6 +16,8 @@ from .types import (
     ImageScaleSpace,
     IntegralImage,
     IntegralVolume,
+    Scalar,
+    ScalarInt,
     Volume,
     VolumeScaleSpace,
 )
@@ -29,7 +31,7 @@ __all__ = [
 ]
 
 
-def _hessian_det2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> float:
+def _hessian_det2(im: IntegralImage, lobe_size: int, coord: Coord2D) -> Scalar:
     dxx = dxx2(im, lobe_size, coord)
     dyy = dyy2(im, lobe_size, coord)
     dxy = dxy2(im, lobe_size, coord)
@@ -60,7 +62,7 @@ def hessian_determinant_2d(
 
 def _hessian_det3(
     vol: IntegralVolume, lobe_size_z: int, lobe_size_rc: int, coord: Coord3D
-) -> float:
+) -> Scalar:
     dxx = dxx3(vol, lobe_size_z, lobe_size_rc, coord)
     dyy = dyy3(vol, lobe_size_z, lobe_size_rc, coord)
     dzz = dzz3(vol, lobe_size_z, lobe_size_rc, coord)
@@ -130,7 +132,7 @@ def response_scale_space_2d(
         slice_sizes=imsze_at_maxfilt,
     )
 
-    def calc(lobe_size: int) -> Array:
+    def calc(lobe_size: int | ScalarInt) -> Array:
         return slice(hess(lobe_size))
 
     return jax.vmap(calc, 0, 0)(lobe_sizes[:, None])
@@ -174,7 +176,9 @@ def response_scale_space_3d(
         slice_sizes=imsze_at_maxfilt,
     )
 
-    def calc(lobe_size_z: int, lobe_size_rc: int) -> Array:
+    def calc(
+        lobe_size_z: int | ScalarInt, lobe_size_rc: int | ScalarInt
+    ) -> Array:
         return slice(hess(lobe_size_z, lobe_size_rc))
 
     return jax.vmap(calc, 0, 0)(
