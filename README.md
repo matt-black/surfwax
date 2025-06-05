@@ -35,6 +35,7 @@ Relies on [uv](https://github.com/astral-sh/uv). After installing and cloning th
 ```
 Then to set up `pre-commit`:
 ```
+> source .venv/bin/activate
 > pre-commit install
 ```
 
@@ -42,7 +43,7 @@ If running on a Mac and you want to use JAX metal (untested):
 
 ```
 > uv venv
-> source activate .venv/bin/activate
+> source .venv/bin/activate
 (surfwax) > uv pip install numpy wheel
 (surfwax) > uv pip install jax-metal
 (surfwax) > uv sync
